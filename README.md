@@ -1,69 +1,42 @@
 # PySpark Style Guide 🌙
+Hey there, fellow PySpark enthusiasts! 👋
 
-This guide outlines my writing style for pipeline code using PySpark.  
-My code formatting comes from years of building data pipelines every day at [Riaktr](https://riaktr.com/). 
+Welcome to my humble attempt at a PySpark Style Guide. Before we dive in, I want to be upfront: I'm no coding guru or PySpark wizard. I'm just a regular developer who's spent way too many hours staring at PySpark code, making mistakes, and (occasionally) learning from them.
 
-### Imports
+This guide is basically a collection of practices I have developed during my time at [Riaktr](https://riaktr.com/). I've been building data pipelines day in and day out, and these are the patterns that have emerged from my headaches and "aha!" moments.
 
-I use aliases for common PySpark modules. This makes it easy to differentiate between Python built-in functions and PySpark functions.
+Now, I'm not claiming these are the "best" practices or the only way to write PySpark code. Far from it! There are probably a million better ways to do things, and I'm sure many of you could code circles around me. This is just my perspective based on my experiences.
 
+So, why bother with a style guide? Well, in my experience, having some common ground on how we write our code has made life a bit easier. It's helped:
+- Spend less time scratching my head trying to decipher my own or others' code
+- Onboard new team members without them running away in terror
+  
+If you find anything helpful in here, great! If not, no worries. Feel free to take what resonates, ignore what doesn't, and adapt everything to what works best for you and your team.
+Remember, at the end of the day, the best code is the code that gets the job done and remains understandable to you when you revisit it months later.
+
+Happy PySparking! 🫶
+
+## Example
+Before diving into specific guidelines, let's look at a comprehensive example that demonstrates many of the principles we'll discuss:
+```python
+provide an example here ...
+```
+
+## Guidelines
+
+### Import Pyspark modules as aliases
+This practice helps distinguish PySpark functions from Python built-ins, making code easier to read and understand.  
+Using 'F.' as a prefix clearly indicates PySpark-specific operations, which is especially useful in complex transformations.
 ```python
 # Good
 from pyspark.sql import functions as F
-from pyspark.sql import DataFrame
-from pyspark.sql.window import Window
 
-# Bad
+# Avoid
 from pyspark.sql.functions import col, when, lit, sum, avg
-
 ```
 
-### DataFrame Operations
-
-I prefer using PySpark's method chaining capabilities and the `transform` method for complex operations.
-
-```python
-# Good
-result_df = (
-    df
-    .filter(F.col("age") >= 18)
-    .group_by("city")
-    .agg(F.avg("salary").alias("avg_salary"))
-    .transform(add_population_density)
-)
-
-# Bad
-temp_df = df.filter(F.col("age") >= 18)
-grouped_df = temp_df.groupBy("city")
-result_df = grouped_df.agg(F.avg("salary").alias("avg_salary"))
-result_df = add_population_density(result_df)
-
-```
-
-## Code Structure and Formatting
-
-### Function Chaining
-
-I use the `.transform()` method for chaining functions. Combined with good function naming, this makes my abstractions easy to understand. I always keep one method per line for better readability.
-
-```python
-# Good
-result_df = (
-    customer_data
-    .transform(clean_customer_data)
-    .transform(enrich_with_location_data)
-    .transform(calculate_customer_metrics)
-)
-
-# Bad
-result_df = customer_data.transform(clean_customer_data).transform(enrich_with_location_data).transform(calculate_customer_metrics)
-
-```
-
-### Line Breaks and Parentheses
-
-I use parentheses to chain multiple functions and limit line breaks as much as possible. This maintains the flow for readers trying to understand the abstraction.
-
+### Use parentheses for line breaks
+This approach makes it easier to add, remove, or reorder transformations without worrying about line continuation characters.
 ```python
 # Good
 processed_sales = (
@@ -76,20 +49,18 @@ processed_sales = (
     .withColumn("processed_date", F.current_date())
 )
 
-# Bad
-processed_sales = raw_sales_data.transform(clean_data) \\
-    .transform(enrich_with_customer_info) \\
-    .transform(calculate_daily_totals) \\
-    .transform(add_moving_average(window_size=7)) \\
-    .transform(flag_anomalies(threshold=2.0)) \\
+# Avoid
+processed_sales = raw_sales_data.transform(clean_data) \
+    .transform(enrich_with_customer_info) \
+    .transform(calculate_daily_totals) \
+    .transform(add_moving_average(window_size=7)) \
+    .transform(flag_anomalies(threshold=2.0)) \
     .withColumn("processed_date", F.current_date())
-
 ```
 
 ### Minimizing Line Breaks
-
-I limit line breaks as much as possible. Excessive line breaks can disrupt the flow for users trying to read and understand the abstraction. This principle applies not only to function chaining but to all aspects of code structure.
-
+Aim for concise, single-line transformations whenever possible.  
+If a line becomes too long, consider simplifying the transformation instead of breaking it.
 ```python
 # Good
 filtered_data = (
@@ -99,7 +70,7 @@ filtered_data = (
     .select("user_id", "name", "age", "country")
 )
 
-# Bad
+# Avoid
 filtered_data = (
     raw_data
     .filter(
@@ -119,98 +90,142 @@ filtered_data = (
         "country"
     )
 )
-
 ```
 
-By minimizing unnecessary line breaks, the code becomes more compact and easier to comprehend at a glance. This approach helps maintain the logical flow of operations and makes it easier to understand the overall structure of the data transformation.
+### Put each transformation on its own line
+Placing each transformation on a separate line improves readability and makes it easier to modify the pipeline.
+```python
+# Good
+result_df = (
+    customer_data
+    .transform(clean_customer_data)
+    .transform(enrich_with_location_data)
+    .transform(calculate_customer_metrics)
+)
 
-## Functional Programming Principles
+# Avoid
+result_df = (
+    customer_data.transform(clean_customer_data).transform(enrich_with_location_data)
+    .transform(calculate_customer_metrics)
+)
+```
 
-I'm a big believer that pipeline code should be written using functional programming principles. This suits the input-process-output nature of data pipelines perfectly.
+### Embrace functional programming with transform chaining
+Pipeline code benefits from functional programming principles, aligning well with the input-process-output nature of data processing. Break down operations into small, focused functions that do only one thing. Use the .transform() method for clear function chaining.
+```python
+# Good
+result_df = (
+    customer_data
+    .transform(clean_customer_data)
+    .transform(enrich_with_location_data)
+    .transform(calculate_customer_metrics)
+)
 
-### Function Design
+# Avoid
+result_df = customer_data.transform(clean_customer_data).transform(enrich_with_location_data).transform(calculate_customer_metrics)
+```
 
-1. I split my code into small, meaningful functions that do one thing and do it well.
-2. My functions always start with a verb.
-3. I use `snake_case` for function names.
+### Use currying for multi-argument transformations
+When chaining functions that require multiple arguments, use currying with the toolz library. This approach allows you to create transform-compatible functions from multi-argument operations.
+```python
+from toolz import curry
 
+@curry
+def add_column_with_default(column_name, default_value, df):
+    return df.withColumn(column_name, F.lit(default_value))
+
+@curry
+def filter_by_value(column_name, value, df):
+    return df.filter(F.col(column_name) == value)
+
+# Usage in a transformation chain
+result_df = (
+    customer_data
+    .transform(clean_customer_data)
+    .transform(add_column_with_default("status", "active"))
+    .transform(add_column_with_default("registration_date", F.current_date()))
+    .transform(filter_by_value("country", "USA"))
+    .transform(calculate_customer_metrics)
+)
+```
+The @curry decorator from toolz automatically creates a curried version of your function. This allows you to partially apply arguments and still use the function in a .transform() chain. It maintains the clean, functional style of your pipeline while enabling more flexible and reusable transformations.
+
+### Start function names with a verb
+Using verbs at the beginning of function names clearly communicates the action being performed.  
+Verb-first naming helps create a natural language-like flow when reading code, especially in data pipeline operations. It also aligns with the principle of functions doing one specific thing, as the verb clearly states the primary action of the function.
 ```python
 # Good
 def clean_customer_data(df: DataFrame) -> DataFrame:
     return df.dropna(subset=["customer_id", "email"])
 
-# Bad
-def customer_data(df: DataFrame) -> DataFrame:
+# Avoid
+def customer_data_cleaning(df: DataFrame) -> DataFrame:
     return df.dropna(subset=["customer_id", "email"])
-
-# Bad
-def cleanCustomerData(df: DataFrame) -> DataFrame:
-    return df.dropna(subset=["customer_id", "email"])
-
 ```
 
-### Type Annotations
-
-I always use type annotations. They improve linting and provide users with clues about the objects I'm working with.
-
+### Use type annotation in function
+Type annotations improve code clarity, enable better linting, and provide clear hints about function inputs and outputs. They serve as inline documentation and help catch type-related errors early.
 ```python
 # Good
 def calculate_total_sales(df: DataFrame, date_col: str) -> DataFrame:
     return df.groupBy(date_col).agg(F.sum("sales").alias("total_sales"))
 
-# Bad
+# Avoid
 def calculate_total_sales(df, date_col):
     return df.groupBy(date_col).agg(F.sum("sales").alias("total_sales"))
-
 ```
 
-### Docstrings
-
-I add concise docstrings to explain the purpose of my functions. I focus on the 'why' rather than the 'how'.
-
+### Write docstrings to explain the 'why'
+Focus on the 'why' rather than the 'how' in docstrings. Only add docstrings to provide context that might not be immediately obvious from the code itself. Do not add docstrings when they're not needed.
 ```python
-# Good
-def identify_high_value_customers(df: DataFrame, threshold: float) -> DataFrame:
+# Good - Docstring adds valuable context
+def remove_incoming_onnet_duplicates(df: DataFrame) -> DataFrame:
     """
-    Identifies high-value customers based on their total purchase amount.
+    Remove duplicate records for incoming, on-network calls.
 
-    High-value customers are those whose total purchases exceed the specified threshold.
-    This segmentation helps in targeting marketing efforts and personalized services.
-    """
-    pass
-
-# Bad
-def identify_high_value_customers(df: DataFrame, threshold: float) -> DataFrame:
-    """
-    Identifies high-value customers.
-
-    Args:
-    df (DataFrame): Input DataFrame with customer purchase data.
-    threshold (float): The purchase amount threshold.
-
-    Returns:
-    DataFrame: DataFrame with high-value customers.
+    In some telecom datasets, incoming on-network calls are recorded twice:
+    once for the sender and once for the receiver. This function keeps only
+    one record for such calls, the outgoing record.
     """
     pass
+
+# Good - No docstring needed, function is self-explanatory
+def add_timestamp_column(df: DataFrame) -> DataFrame:
+    return df.withColumn("timestamp", F.current_timestamp())
+
+# Avoid - Unnecessary docstring
+def calculate_total_sales(df: DataFrame) -> DataFrame:
+    """
+    This function calculates the total sales by summing the 'sales' column.
+    """
+    return df.agg(F.sum("sales").alias("total_sales"))
 ```
 
-## Naming Conventions
-
-I use consistent naming conventions to improve code readability:
-
-1. Functions: `snake_case`, starting with a verb (e.g., `calculate_total_sales`)
-2. Variables: `snake_case` (e.g., `customer_data`, `sales_report`)
-3. Constants: `UPPER_CASE_WITH_UNDERSCORES` (e.g., `MAX_RETRY_ATTEMPTS`)
-4. Classes: `PascalCase` (e.g., `CustomerSegmentation`)
-
-I also prefer using full, descriptive names over abbreviations:
-
+### Use descriptive name over abbreviation
+Opt for clear, descriptive names rather than cryptic abbreviations. Reduce the cognitive load for anyone reading or maintaining the code.  
+Descriptive names make your code more intuitive and reduce the need for additional comments. While they may require more typing initially, the clarity they provide pays off in improved maintainability and reduced errors due to misunderstanding. However, be mindful of overly long names that might decrease readability.
 ```python
 # Good
 customer_lifetime_value = calculate_lifetime_value(customer_data)
 
-# Bad
+# Avoid
 clv = calc_ltv(cust_data)
 ```
 
-Remember, this style guide is a living document. As I encounter new patterns or best practices, I don't hesitate to update and expand it. Happy coding!
+## Adios Amigos 🫡
+Well, folks, we've reached the end of this PySpark style adventure! 🎢
+
+I hope you've found at least a nugget or two of useful info in this guide. Remember, these are just the practices that have kept me (mostly) sane while wrangling data pipelines. They're not set in stone, and they're definitely not the only way to write PySpark code.
+
+As I continue my journey through the world of big data, I'm sure I'll stumble upon new insights, face-palm at my past mistakes, and maybe even have a few more "eureka!" moments. When that happens, you can bet I'll be updating this guide.
+
+So, consider this a living document – it's growing, changing... Feel free to check back now and then to see what new wisdom (or blunders) I've added.
+
+If you've made it this far, congratulations! You now know way too much about how I like to format my PySpark code. Use this knowledge wisely, or don't use it at all.
+
+Remember, the best code is the one that works, doesn't make your future self want to time-travel just to slap your past self, and hopefully makes your data pipeline purr like a well-oiled machine.
+
+Keep sparking, keep learning, and may your clusters always be distributed and your data never corrupted!
+
+Happy PySparking, everyone! 🐍
+
