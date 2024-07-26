@@ -24,7 +24,7 @@ Let's dive into a comprehensive example that demonstrates many of the principles
 Here's how we might analyze our ice cream sales data using our PySpark best practices:
 
 ```python
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.window import Window
 from toolz import curry
@@ -33,23 +33,24 @@ PREMIUM_PRICE_THRESHOLD = 4.50
 LOW_POPULARITY_THRESHOLD = 50
 MEDIUM_POPULARITY_THRESHOLD = 80
 
-scoops_analysis = (
-    ice_cream_data
-    .transform(remove_incomplete_records)
-    .transform(categorize_popularity(LOW_POPULARITY_THRESHOLD, MEDIUM_POPULARITY_THRESHOLD))
-    .transform(calculate_daily_revenue)
-    .transform(filter_premium_flavors(PREMIUM_PRICE_THRESHOLD))
-    .transform(rank_flavors_by_revenue)
-)
-
-scoops_analysis = (
-    ice_cream_data
-    .transform(remove_incomplete_records)
-    .transform(categorize_popularity)
-    .transform(calculate_daily_revenue)
-    .transform(filter_premium_flavors(PREMIUM_PRICE_THRESHOLD))
-    .transform(rank_flavors_by_revenue)
-)
+def main():
+    '''
+    Note: In a production environment, you would typically wrap this transformation
+    chain in your orchestrator flow (e.g., Airflow DAG, Luigi pipeline). 
+    
+    For simplicity in this example:
+    1. We're not using any specific data connectors.
+    2. We've wrapped the logic in a simple main() function.
+    3. We're assuming 'ice_cream_data' is already available.
+    '''
+    scoops_analysis = (
+        ice_cream_data 
+        .transform(remove_incomplete_records)
+        .transform(categorize_popularity(LOW_POPULARITY_THRESHOLD, MEDIUM_POPULARITY_THRESHOLD))
+        .transform(calculate_daily_revenue)
+        .transform(filter_premium_flavors(PREMIUM_PRICE_THRESHOLD))
+        .transform(rank_flavors_by_revenue)
+    )
 
 def remove_incomplete_records(df: DataFrame) -> DataFrame:
     return df.dropna(subset=["flavor", "scoops_sold", "price"])
@@ -86,7 +87,6 @@ def rank_flavors_by_revenue(df: DataFrame) -> DataFrame:
         .agg(F.sum("daily_revenue").alias("total_revenue"))
         .withColumn("flavor_rank", F.rank().over(window_spec))
     )
-
 ```
 
 ## Guidelines
