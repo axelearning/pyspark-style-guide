@@ -1,9 +1,7 @@
 # PySpark Style Guide 🌙
 Hey there, fellow PySpark enthusiasts! 👋
 
-Welcome to my humble attempt at a PySpark Style Guide. Before we dive in, I want to be upfront: I'm no coding guru or PySpark wizard. I'm just a regular developer who's spent way too many hours staring at PySpark code, making mistakes, and (occasionally) learning from them.
-
-This guide is basically a collection of practices I have developed during my time at [Riaktr](https://riaktr.com/). I've been building data pipelines day in and day out, and these are the patterns that have emerged from my headaches and "aha!" moments.
+Welcome to my humble attempt at a PySpark Style Guide. Before we dive in, I want to be upfront: I'm no coding guru or PySpark wizard. I'm just a regular developer who's spent way too many hours staring at PySpark code, making mistakes, and (occasionally) learning from them.This guide is basically a collection of practices I have developed during my time at [Riaktr](https://riaktr.com/). I've been building data pipelines day in and day out, and these are the patterns that have emerged from my headaches and "aha!" moments.
 
 Now, I'm not claiming these are the "best" practices or the only way to write PySpark code. Far from it! There are probably a million better ways to do things, and I'm sure many of you could code circles around me. This is just my perspective based on my experiences.
 
@@ -18,12 +16,12 @@ Happy PySparking! 🫶
 
 
 ## Example
-Before diving into specific guidelines, let's look at a comprehensive example that demonstrates many of the principles we'll discuss. But first, a quick scoop on the data we'll be using throughout this guide:
+Let's dive into a comprehensive example that demonstrates many of the principles we'll discuss. To make things more fun (and delicious), we'll use a fictional ice cream business scenario:
 >**🍦 Our Delicious Data**
 >  
 > Imagine you're running "Scoops & Smiles," a booming ice cream empire. You're drowning in data: daily sales, flavor popularity, even customer brain freeze incidents. Throughout this guide, we'll use this chilly data to serve up some hot PySpark styling tips.
 
-Now, let's dive into our example. Here's how we might analyze our ice cream sales data using our PySpark best practices:
+Here's how we might analyze our ice cream sales data using our PySpark best practices:
 
 ```python
 from pyspark.sql import DataFrame, SparkSession
